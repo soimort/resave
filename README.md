@@ -1,10 +1,10 @@
 # Resave
 
-Resave, a web scraping resource saver, written in Tcl.
+Resave, a web scraping resource saver written in Tcl.
 
 ## Dependencies
 
-* Tcl 8.6 <http://tcl.tk/>
+* Tcl (>= 8.5) <http://tcl.tk/>
 * TLS <http://tls.sourceforge.net/>
 
 ## Usage
