@@ -1,0 +1,251 @@
+#!/usr/bin/env tclsh
+package require http
+package require tls
+
+set script_name resave
+set version 0.0.1
+set usage {Resave, a web scraping resource saver.
+Usage: resave [OPTION]... [URL]...
+
+Mandatory arguments to long options are mandatory for short options too.
+
+Options:
+  -V,  --version           display the version and exit.
+  -h,  --help              print this help.
+
+  -r,  --resource          download resource if supported.
+  -o,  --output [OUT_DIR]  save files to OUT_DIR/...
+  -q,  --quiet             quiet (no output).
+}
+
+# Optional args
+set optargs {
+    resource  0
+    quiet     0
+}
+
+# Legitimize filename
+proc legitimize {filename} {
+    string map -nocase {
+        "/" "-"
+    } $filename
+}
+
+################
+# Sub-commands #
+################
+
+# Print version
+proc version {} {
+    global script_name version
+    puts stdout "$script_name $version"
+}
+
+# Print help
+proc help {} {
+    global usage
+    puts stdout $usage
+}
+
+# Save URL as HTML bookmark
+proc save_url {url} {
+    global optargs
+    if {[dict exists $optargs output]} {
+        set output [dict get $optargs output]
+    } else {
+        set output {}
+    }
+    
+    regexp {^([[:alpha:]]+)://} $url -> protocol
+    if {[string equal $protocol https]} {
+        ::http::register https 443 ::tls::socket
+    }
+    
+    regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
+    set token [http::geturl $url]
+    set data [http::data $token]
+    regexp {(?i)<title>([^<]+)} $data -> title
+    set filename "$title - $domain"
+    http::cleanup $token
+    
+    set filename [legitimize $filename]
+    set filename [file join $output $filename]
+    
+    if {[file exists "$filename.html"]} {
+        for {set i 1} {[file exists "$filename ($i).html"]} {incr i} {}
+        set filename "$filename ($i)"
+    }
+    set filename "$filename.html"
+    
+    set html "<meta http-equiv=\"refresh\" content=\"0; $url\">"
+    
+    set ofid [open $filename w]
+    puts -nonewline $ofid $html
+    close $ofid
+}
+
+# Save images from Ameblo
+proc save_ameblo {url} {
+    global optargs
+    set quiet [dict get $optargs quiet]
+    if {[dict exists $optargs output]} {
+        set output [dict get $optargs output]
+    } else {
+        set output {}
+    }
+    
+    regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
+    set token [http::geturl $url]
+    set data [http::data $token]
+    http::cleanup $token
+    
+    regexp {(?i)<title>([^<]+)} $data -> title
+    set matches [regexp -all -inline {(http://stat.ameba.jp/user_images/[^\"]+)} $data]
+    set len [expr [llength $matches] / 2]
+    set i 0
+    foreach {_ imgUrl} $matches {
+        incr i
+        set dirname "$title - $domain"
+        
+        set dirname [legitimize $dirname]
+        set dirname [file join $output $dirname]
+        
+        if {![file isdirectory $dirname]} {
+            file mkdir $dirname
+        }
+        
+        regexp {/([^/]+)$} $imgUrl -> output_filename
+        if {[file exists [file join $dirname $output_filename]]} {
+            if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
+        } else {
+            if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
+            
+            # Download $imgUrl
+            set filename [file join $dirname $output_filename]
+            set ofid [open $filename w]
+            chan configure $ofid -translation binary
+            set token [http::geturl $imgUrl -channel $ofid]
+            http::cleanup $token
+            close $ofid
+        }
+    }
+    
+    set matches [regexp -all -inline {"imgUrl":"([^\"]+)"[^\{]+"title":"([^\"]+)"} $data]
+    set len [expr [llength $matches] / 3]
+    set i 0
+    foreach {_ imgUrl title} $matches {
+        incr i
+        set dirname "$title - $domain"
+        
+        set dirname [legitimize $dirname]
+        set dirname [file join $output $dirname]
+        
+        if {![file isdirectory $dirname]} {
+            file mkdir $dirname
+        }
+        
+        set imgUrl "http://stat.ameba.jp$imgUrl"
+        regexp {/([^/]+)$} $imgUrl -> output_filename
+        if {[file exists [file join $dirname $output_filename]]} {
+            if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
+        } else {
+            if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
+            
+            # Download $imgUrl
+            set filename [file join $dirname $output_filename]
+            set ofid [open $filename w]
+            chan configure $ofid -translation binary
+            set token [http::geturl $imgUrl -channel $ofid]
+            http::cleanup $token
+            close $ofid
+        }
+    }
+}
+
+# Save main
+proc save {url} {
+    global optargs
+    set resource [dict get $optargs resource]
+    
+    regexp {^([[:alpha:]]+)://} $url -> protocol
+    if {[info exists protocol]} {
+        if {![string equal $protocol "http"]
+            && ![string equal $protocol "https"]} {
+            puts "Unsupported protocol"
+            return
+        }
+    } else {
+        set url http://$url
+    }
+    
+    if {$resource == 0} {
+        save_url $url
+    } else {
+        if {[string match "http://ameblo.jp/*" $url]} {
+            save_ameblo $url
+        } else {
+            puts "Unsupported resource $url"
+        }
+    }
+}
+
+################
+# Main program #
+################
+
+# Print help if no argument is given
+if {$argc == 0} { help; exit }
+
+# Parse command-line options
+if {[string equal [info script] $argv0]} {
+    while {[llength $argv] > 0} {
+        set flag [lindex $argv 0]
+        switch -regexp -- $flag {
+            "^(-V|--version)$" {
+                # Print version
+                version; exit
+            }
+            
+            "^(-h|--help)$" {
+                # Print help
+                help; exit
+            }
+            
+            "^(-r|--resource)$" {
+                # Resource mode
+                set argv [lrange $argv 1 end]
+                dict set optargs resource 1
+            }
+            
+            "^(-q|--quiet)$" {
+                # Quiet mode
+                set argv [lrange $argv 1 end]
+                dict set optargs quiet 1
+            }
+            
+            "^(-o|--output)$" {
+                # Output folder
+                set value [lindex $argv 1]
+                set argv [lrange $argv 2 end]
+                dict set optargs output $value
+            }
+            "^(-o.+)$" {
+                # Output folder
+                regexp -- {-o(.+)} $flag _ value
+                set argv [lrange $argv 1 end]
+                dict set optargs output $value
+            }
+            
+            default {
+                # End of options
+                break
+            }
+        }
+    }
+}
+
+foreach url $argv {
+    save $url
+}
+
+exit
