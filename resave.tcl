@@ -115,6 +115,7 @@ proc save_ameblo {url} {
         }
         
         regexp {/([^/]+)$} $imgUrl -> output_filename
+        set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
@@ -145,7 +146,9 @@ proc save_ameblo {url} {
         }
         
         set imgUrl "http://stat.ameba.jp$imgUrl"
+        
         regexp {/([^/]+)$} $imgUrl -> output_filename
+        set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
@@ -160,6 +163,37 @@ proc save_ameblo {url} {
             close $ofid
         }
     }
+}
+
+# Save images from Instagram
+proc save_instagram {url} {
+    global optargs
+    if {[dict exists $optargs output]} {
+        set output [dict get $optargs output]
+    } else {
+        set output {}
+    }
+    
+    set token [http::geturl $url]
+    set data [http::data $token]
+    http::cleanup $token
+    
+    regexp {(?i)<meta property="og:image" content="([^\"]+)"} $data -> imgUrl
+    regexp {(?i)<meta property="og:title" content="([^\"]+)"} $data -> title
+    if {[info exists title]} {
+        set output_filename $title.jpg
+    } else {
+        regexp {/([^/]+)$} $imgUrl -> output_filename
+    }
+    set output_filename [legitimize $output_filename]
+    
+    # Download $imgUrl
+    set filename [file join $output $output_filename]
+    set ofid [open $filename w]
+    chan configure $ofid -translation binary
+    set token [http::geturl $imgUrl -channel $ofid]
+    http::cleanup $token
+    close $ofid
 }
 
 # Save main
@@ -183,6 +217,8 @@ proc save {url} {
     } else {
         if {[string match "http://ameblo.jp/*" $url]} {
             save_ameblo $url
+        } elseif {[string match "http://instagram.com/*" $url]} {
+            save_instagram $url
         } else {
             puts "Unsupported resource $url"
         }
