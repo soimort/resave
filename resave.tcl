@@ -196,6 +196,59 @@ proc save_instagram {url} {
     close $ofid
 }
 
+# Save images from Baidu Tieba
+proc save_baidu_tieba {url} {
+    global optargs
+    set quiet [dict get $optargs quiet]
+    if {[dict exists $optargs output]} {
+        set output [dict get $optargs output]
+    } else {
+        set output {}
+    }
+    
+    regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
+    set token [http::geturl $url]
+    set data [http::data $token]
+    http::cleanup $token
+    
+    regexp {(?i)<title>([^<]+)} $data -> title
+    set title [encoding convertfrom gb2312 $title]
+    
+    set matches [regexp -all -inline {class="BDE_Image" src="([^\"]+)"} $data]
+    set len [expr [llength $matches] / 2]
+    set i 0
+    foreach {_ imgUrl} $matches {
+        incr i
+        set dirname "$title - $domain"
+        
+        set dirname [legitimize $dirname]
+        set dirname [file join $output $dirname]
+        
+        if {![file isdirectory $dirname]} {
+            file mkdir $dirname
+        }
+        
+        regexp {/([^/]+)$} $imgUrl -> output_filename
+        set output_filename [legitimize $output_filename]
+        if {[file exists [file join $dirname $output_filename]]} {
+            if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
+        } else {
+            # Set new $imgUrl
+            set imgUrl http://imgsrc.baidu.com/forum/pic/item/$output_filename
+            
+            if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
+            
+            # Download $imgUrl
+            set filename [file join $dirname $output_filename]
+            set ofid [open $filename w]
+            chan configure $ofid -translation binary
+            set token [http::geturl $imgUrl -channel $ofid]
+            http::cleanup $token
+            close $ofid
+        }
+    }
+}
+
 # Save main
 proc save {url} {
     global optargs
@@ -219,6 +272,8 @@ proc save {url} {
             save_ameblo $url
         } elseif {[string match "http://instagram.com/*" $url]} {
             save_instagram $url
+        } elseif {[string match "http://tieba.baidu.com/*" $url]} {
+            save_baidu_tieba $url
         } else {
             puts "Unsupported resource $url"
         }
