@@ -1,6 +1,6 @@
 # Resave
 
-Resave, a web scraping resource saver written in Tcl.
+Resave, a web scraping resource downloader written in Tcl.
 
 ## Dependencies
 
@@ -22,3 +22,9 @@ Options:
   -o,  --output [OUT_DIR]  save files to OUT_DIR/...
   -q,  --quiet             quiet (no output).
 ```
+
+## Supported Sites
+
+* Ameblo <http://ameblo.jp/*>
+* Baidu Tieba <http://tieba.baidu.com/*>
+* Instagram <http://instagram.com/*>

@@ -4,7 +4,7 @@ package require tls
 
 set script_name resave
 set version 0.0.1
-set usage {Resave, a web scraping resource saver.
+set usage {Resave, a web scraping resource downloader.
 Usage: resave [OPTION]... [URL]...
 
 Mandatory arguments to long options are mandatory for short options too.
