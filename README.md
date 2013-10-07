@@ -5,6 +5,7 @@ Resave, a web scraping resource downloader written in Tcl.
 ## Dependencies
 
 * Tcl (>= 8.5) <http://tcl.tk/>
+* Tcllib <http://tcllib.sourceforge.net/>
 * TLS <http://tls.sourceforge.net/>
 
 ## Usage

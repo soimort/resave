@@ -1,6 +1,7 @@
 #!/usr/bin/env tclsh
 package require http
 package require tls
+package require autoproxy
 
 set script_name resave
 set version 0.0.1
@@ -334,6 +335,8 @@ if {[string equal [info script] $argv0]} {
         }
     }
 }
+
+autoproxy::init
 
 foreach url $argv {
     save $url
