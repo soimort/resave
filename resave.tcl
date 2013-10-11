@@ -215,7 +215,8 @@ proc save_baidu_tieba {url} {
     regexp {(?i)<title>([^<]+)} $data -> title
     set title [encoding convertfrom gb2312 $title]
     
-    set matches [regexp -all -inline {class="BDE_Image" src="([^\"]+)"} $data]
+    set matches [regexp -all -inline {class="BDE_Image"[^<>]+src="([^\"]+)"} $data]
+    set matches [concat $matches [regexp -all -inline {src="([^\"]+)"[^<>]+class="BDE_Image"} $data]]
     set len [expr [llength $matches] / 2]
     set i 0
     foreach {_ imgUrl} $matches {
