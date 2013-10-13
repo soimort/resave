@@ -101,7 +101,7 @@ proc save_ameblo {url} {
     http::cleanup $token
     
     regexp {(?i)<title>([^<]+)} $data -> title
-    set matches [regexp -all -inline {(http://stat.ameba.jp/user_images/[^\"]+)} $data]
+    set matches [regexp -all -inline {(http://stat.ameba.jp/user_images/[^\"<]+)} $data]
     set len [expr [llength $matches] / 2]
     set i 0
     foreach {_ imgUrl} $matches {
