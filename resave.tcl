@@ -284,13 +284,14 @@ proc save_douban {url} {
         }
         
         regexp {/([^/]+)$} $imgUrl -> output_filename
+        
+        # Set new $imgUrl
+        set imgUrl [lindex [regexp -all -inline (.+/view/photo/) $imgUrl] 1]photo/public/$output_filename
+        
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
-            # Set new $imgUrl
-            set imgUrl [lindex [regexp -all -inline (.+/view/photo/) $imgUrl] 1]raw/public/$output_filename
-            
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
             
             # Download $imgUrl
