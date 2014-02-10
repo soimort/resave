@@ -323,6 +323,9 @@ proc save_tumblr {url} {
     http::cleanup $token
 
     regexp {<meta property="og:description" content="([^\"]+)"} $data -> title
+    if {[info exists title] == 0} {
+        regexp {<meta name="keywords" content="([^\"]+)"} $data -> title
+    }
     set title [string trim $title]
 
     set matches [regexp -all -inline {<meta property="og:image" content="([^\"]+)"} $data]
