@@ -56,30 +56,30 @@ proc save_url {url} {
     } else {
         set output {}
     }
-    
+
     regexp {^([[:alpha:]]+)://} $url -> protocol
     if {[string equal $protocol https]} {
         ::http::register https 443 ::tls::socket
     }
-    
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
     regexp {(?i)<title>([^<]+)} $data -> title
     set filename "$title - $domain"
     http::cleanup $token
-    
+
     set filename [legitimize $filename]
     set filename [file join $output $filename]
-    
+
     if {[file exists "$filename.html"]} {
         for {set i 1} {[file exists "$filename ($i).html"]} {incr i} {}
         set filename "$filename ($i)"
     }
     set filename "$filename.html"
-    
+
     set html "<meta http-equiv=\"refresh\" content=\"0; $url\">"
-    
+
     set ofid [open $filename w]
     puts -nonewline $ofid $html
     close $ofid
@@ -94,12 +94,12 @@ proc save_ameblo {url} {
     } else {
         set output {}
     }
-    
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
     http::cleanup $token
-    
+
     regexp {(?i)<title>([^<]+)} $data -> title
     set matches [regexp -all -inline {(http://stat.ameba.jp/user_images/[^\"<]+)} $data]
     set len [expr [llength $matches] / 2]
@@ -107,21 +107,21 @@ proc save_ameblo {url} {
     foreach {_ imgUrl} $matches {
         incr i
         set dirname "$title - $domain"
-        
+
         set dirname [legitimize $dirname]
         set dirname [file join $output $dirname]
-        
+
         if {![file isdirectory $dirname]} {
             file mkdir $dirname
         }
-        
+
         regexp {/([^/]+)$} $imgUrl -> output_filename
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
-            
+
             # Download $imgUrl
             set filename [file join $dirname $output_filename]
             set ofid [open $filename w]
@@ -131,30 +131,30 @@ proc save_ameblo {url} {
             close $ofid
         }
     }
-    
+
     set matches [regexp -all -inline {"imgUrl":"([^\"]+)"[^\{]+"title":"([^\"]+)"} $data]
     set len [expr [llength $matches] / 3]
     set i 0
     foreach {_ imgUrl title} $matches {
         incr i
         set dirname "$title - $domain"
-        
+
         set dirname [legitimize $dirname]
         set dirname [file join $output $dirname]
-        
+
         if {![file isdirectory $dirname]} {
             file mkdir $dirname
         }
-        
+
         set imgUrl "http://stat.ameba.jp$imgUrl"
-        
+
         regexp {/([^/]+)$} $imgUrl -> output_filename
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
-            
+
             # Download $imgUrl
             set filename [file join $dirname $output_filename]
             set ofid [open $filename w]
@@ -174,11 +174,11 @@ proc save_instagram {url} {
     } else {
         set output {}
     }
-    
+
     set token [http::geturl $url]
     set data [http::data $token]
     http::cleanup $token
-    
+
     regexp {(?i)<meta property="og:image" content="([^\"]+)"} $data -> imgUrl
     regexp {(?i)<meta property="og:title" content="([^\"]+)"} $data -> title
     if {[info exists title]} {
@@ -187,7 +187,7 @@ proc save_instagram {url} {
         regexp {/([^/]+)$} $imgUrl -> output_filename
     }
     set output_filename [legitimize $output_filename]
-    
+
     # Download $imgUrl
     set filename [file join $output $output_filename]
     set ofid [open $filename w]
@@ -206,15 +206,15 @@ proc save_baidu_tieba {url} {
     } else {
         set output {}
     }
-    
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
     http::cleanup $token
-    
+
     regexp {(?i)<title>([^<]+)} $data -> title
     set title [encoding convertfrom gb2312 $title]
-    
+
     set matches [regexp -all -inline {class="BDE_Image"[^<>]+src="([^\"]+)"} $data]
     set matches [concat $matches [regexp -all -inline {src="([^\"]+)"[^<>]+class="BDE_Image"} $data]]
     set len [expr [llength $matches] / 2]
@@ -222,14 +222,14 @@ proc save_baidu_tieba {url} {
     foreach {_ imgUrl} $matches {
         incr i
         set dirname "$title - $domain"
-        
+
         set dirname [legitimize $dirname]
         set dirname [file join $output $dirname]
-        
+
         if {![file isdirectory $dirname]} {
             file mkdir $dirname
         }
-        
+
         regexp {/([^/]+)$} $imgUrl -> output_filename
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
@@ -237,9 +237,9 @@ proc save_baidu_tieba {url} {
         } else {
             # Set new $imgUrl
             set imgUrl http://imgsrc.baidu.com/forum/pic/item/$output_filename
-            
+
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
-            
+
             # Download $imgUrl
             set filename [file join $dirname $output_filename]
             set ofid [open $filename w]
@@ -260,40 +260,40 @@ proc save_douban {url} {
     } else {
         set output {}
     }
-    
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
     http::cleanup $token
-    
+
     regexp {(?i)<title>([^<]+)} $data -> title
     set title [string trim $title]
-    
+
     set matches [regexp -all -inline {id="[^\"]+"><img src="([^\"]+)"} $data]
     set len [expr [llength $matches] / 2]
     set i 0
     foreach {_ imgUrl} $matches {
         incr i
         set dirname "$title - $domain"
-        
+
         set dirname [legitimize $dirname]
         set dirname [file join $output $dirname]
-        
+
         if {![file isdirectory $dirname]} {
             file mkdir $dirname
         }
-        
+
         regexp {/([^/]+)$} $imgUrl -> output_filename
-        
+
         # Set new $imgUrl
         set imgUrl [lindex [regexp -all -inline (.+/view/photo/) $imgUrl] 1]photo/public/$output_filename
-        
+
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
-            
+
             # Download $imgUrl
             set filename [file join $dirname $output_filename]
             set ofid [open $filename w]
@@ -309,7 +309,7 @@ proc save_douban {url} {
 proc save {url} {
     global optargs
     set resource [dict get $optargs resource]
-    
+
     regexp {^([[:alpha:]]+)://} $url -> protocol
     if {[info exists protocol]} {
         if {![string equal $protocol "http"]
@@ -320,7 +320,7 @@ proc save {url} {
     } else {
         set url http://$url
     }
-    
+
     if {$resource == 0} {
         save_url $url
     } else {
@@ -354,24 +354,24 @@ if {[string equal [info script] $argv0]} {
                 # Print version
                 version; exit
             }
-            
+
             "^(-h|--help)$" {
                 # Print help
                 help; exit
             }
-            
+
             "^(-r|--resource)$" {
                 # Resource mode
                 set argv [lrange $argv 1 end]
                 dict set optargs resource 1
             }
-            
+
             "^(-q|--quiet)$" {
                 # Quiet mode
                 set argv [lrange $argv 1 end]
                 dict set optargs quiet 1
             }
-            
+
             "^(-o|--output)$" {
                 # Output folder
                 set value [lindex $argv 1]
@@ -384,7 +384,7 @@ if {[string equal [info script] $argv0]} {
                 set argv [lrange $argv 1 end]
                 dict set optargs output $value
             }
-            
+
             default {
                 # End of options
                 break
