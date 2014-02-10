@@ -19,7 +19,8 @@ Options:
   -V,  --version           display the version and exit.
   -h,  --help              print this help.
 
-  -r,  --resource          download resource if supported.
+  -r,  --resource          download resource if supported (default).
+  -b,  --bookmark          save as bookmark.
   -o,  --output [OUT_DIR]  save files to OUT_DIR/...
   -q,  --quiet             quiet (no output).
 ```
@@ -28,4 +29,6 @@ Options:
 
 * Ameblo <http://ameblo.jp/*>
 * Baidu Tieba <http://tieba.baidu.com/*>
+* Douban <http://site.douban.com/*>
 * Instagram <http://instagram.com/*>
+* Tumblr <http://*.tumblr.com/*>
