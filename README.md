@@ -32,3 +32,4 @@ Options:
 * Douban <http://site.douban.com/*>
 * Instagram <http://instagram.com/*>
 * Tumblr <http://*.tumblr.com/*>
+* Google+ albums <https://plus.google.com/*>
