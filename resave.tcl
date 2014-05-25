@@ -378,7 +378,7 @@ proc save_google_plus {url} {
     set data [http::data $token]
     http::cleanup $token
 
-    regexp {<title>(.+)</title>} $data -> title
+    regexp {<title[^<]+>(.+)</title>} $data -> title
     set title [string trim $title]
 
     set matches [regexp -all -inline {(https://lh[[:digit:]].googleusercontent.com/[^/\"]+)\"} $data]
