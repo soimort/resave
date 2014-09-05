@@ -31,7 +31,7 @@ proc legitimize {filename} {
     string map -nocase {
         "/" "-"
         "\n" " "
-    } [string range $filename 0 64]
+    } [string range $filename 0 128]
 }
 
 ################
@@ -85,6 +85,58 @@ proc save_url {url} {
     set ofid [open $filename w]
     puts -nonewline $ofid $html
     close $ofid
+}
+
+# Save images
+proc save_images {url} {
+    global optargs
+    set quiet [dict get $optargs quiet]
+    if {[dict exists $optargs output]} {
+        set output [dict get $optargs output]
+    } else {
+        set output {}
+    }
+
+    regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
+    set token [http::geturl $url]
+    set data [http::data $token]
+    http::cleanup $token
+
+    regexp {<title>([^<]+)</title>} $data -> title
+    set title [string trim $title]
+
+    set matches [regexp -all -inline {http:[^\"\']+(\.jpg|\.png|\.gif)} $data]
+    set len [expr [llength $matches] / 2]
+    set i 0
+    foreach {imgUrl _} $matches {
+        incr i
+        set dirname "$title - $domain"
+
+        set dirname [legitimize $dirname]
+        set dirname [file join $output $dirname]
+
+        if {![file isdirectory $dirname]} {
+            file mkdir $dirname
+        }
+
+        regexp {/([^/]+)$} $imgUrl -> output_filename
+        puts $output_filename
+
+        set output_filename [legitimize $output_filename]
+        if {[file exists [file join $dirname $output_filename]]} {
+            if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
+        } else {
+            if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
+
+            # Download $imgUrl
+            set filename [file join $dirname $output_filename]
+            set ofid [open $filename w]
+            chan configure $ofid -translation binary
+            set token [http::geturl $imgUrl -channel $ofid]
+            http::cleanup $token
+            close $ofid
+        }
+    }
 }
 
 # Save images from Ameblo
@@ -454,7 +506,7 @@ proc save {url} {
         } elseif {[string match "https://plus.google.com/*" $url]} {
             save_google_plus $url
         } else {
-            puts "Unsupported resource $url"
+            save_images $url
         }
     }
 }
