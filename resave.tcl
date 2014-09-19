@@ -370,6 +370,8 @@ proc save_tumblr {url} {
         set output {}
     }
 
+    http::register https 443 ::autoproxy::tls_socket
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
