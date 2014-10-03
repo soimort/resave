@@ -381,6 +381,9 @@ proc save_tumblr {url} {
     if {[info exists title] == 0} {
         regexp {<meta name="keywords" content="([^\"]+)"} $data -> title
     }
+    if {[info exists title] == 0} {
+        regexp {<title>([^<]+)</title>} $data -> title
+    }
     set title [string trim $title]
 
     set matches [regexp -all -inline {<meta property="og:image" content="([^\"]+)"} $data]
