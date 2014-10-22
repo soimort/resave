@@ -31,5 +31,6 @@ Options:
 * Baidu Tieba <http://tieba.baidu.com/*>
 * Douban <http://site.douban.com/*>
 * Instagram <http://instagram.com/*>
+* Twitter <https://twitter.com/*>
 * Tumblr <http://*.tumblr.com/*>
 * Google+ albums <https://plus.google.com/*>
