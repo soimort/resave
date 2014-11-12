@@ -107,7 +107,7 @@ proc save_images {url} {
     regexp {<title>([^<]+)</title>} $data -> title
     set title [string trim $title]
 
-    set matches [regexp -all -inline {http:[^\"\')]+(\.jpg|\.png|\.gif)} $data]
+    set matches [regexp -all -inline {https?:[^\"\')]+(\.jpg|\.png|\.gif)} $data]
     set len [expr [llength $matches] / 2]
     set i 0
     foreach {imgUrl _} $matches {
@@ -122,7 +122,7 @@ proc save_images {url} {
         }
 
         regexp {/([^/]+)$} $imgUrl -> output_filename
-        puts $output_filename
+        set output_filename "\[$i\] $output_filename"
 
         set output_filename [legitimize $output_filename]
         if {[file exists [file join $dirname $output_filename]]} {
