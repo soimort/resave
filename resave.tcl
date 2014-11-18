@@ -31,7 +31,7 @@ proc legitimize {filename} {
     string map -nocase {
         "/" "-"
         "\n" " "
-    } [string range $filename 0 128]
+    } [string range $filename 0 64]
 }
 
 ################
