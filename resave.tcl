@@ -500,20 +500,14 @@ proc save_twitter {url} {
 
     regexp {http://t.co/([^&]+)&} $data -> title
 
-    set matches [regexp -all -inline {"(https://pbs.twimg.com/media/[^\"]+)"} $data]
+    set matches [regexp -all -inline {"(https://pbs.twimg.com/media/[^:\"]+)"} $data]
     set len [expr [llength $matches] / 2]
     set i 0
     foreach {_ imgUrl} $matches {
         incr i
-        set dirname "$title - $domain"
+        set dirname "."
 
-        set dirname [legitimize $dirname]
-        set dirname [file join $output $dirname]
-
-        if {![file isdirectory $dirname]} {
-            file mkdir $dirname
-        }
-
+        set imgUrl $imgUrl:orig
         regexp {/([^/]+)$} $imgUrl -> output_filename
 
         set output_filename [legitimize $output_filename]
@@ -526,7 +520,7 @@ proc save_twitter {url} {
             set filename [file join $dirname $output_filename]
             set ofid [open $filename w]
             chan configure $ofid -translation binary
-            set token [http::geturl $imgUrl:large -channel $ofid]
+            set token [http::geturl $imgUrl -channel $ofid]
             http::cleanup $token
             close $ofid
         }
