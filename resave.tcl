@@ -377,10 +377,11 @@ proc save_blogspot {url} {
     regexp {(?i)<title>([^<]+)} $data -> title
     set title [string trim $title]
 
-    set matches [regexp -all -inline {http://[^<\"\')]+/s1600/[^<\"\')]+(\.jpg)} $data]
-    set len [expr [llength $matches] / 2]
+    set matches [regexp -all -inline {http://[^<\"\')]+/s1600/[^<\"\')]+\.jpg} $data]
+    set matches [lsort -unique $matches]
+    set len [expr [llength $matches]]
     set i 0
-    foreach {imgUrl _} $matches {
+    foreach {imgUrl} $matches {
         incr i
         set dirname "$title - $domain"
 
