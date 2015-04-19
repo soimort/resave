@@ -1,6 +1,6 @@
 # Resave
 
-Resave, a web scraping resource downloader written in Tcl.
+Resave, an image downloader written in Tcl.
 
 ## Dependencies
 
