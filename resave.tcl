@@ -225,6 +225,7 @@ proc save_ameblo {url} {
 # Save images from Instagram
 proc save_instagram {url} {
     global optargs
+    set quiet [dict get $optargs quiet]
     if {[dict exists $optargs output]} {
         set output [dict get $optargs output]
     } else {
@@ -241,6 +242,8 @@ proc save_instagram {url} {
     regexp {(?i)<meta property="og:title" content="([^\"]+)"} $data -> title
     regexp {/([^/]+)$} $imgUrl -> output_filename
     set output_filename [legitimize $output_filename]
+
+    if {!$quiet} { puts "\[Downloading 1/1\] $imgUrl" }
 
     # Download $imgUrl
     set filename [file join $output $output_filename]
