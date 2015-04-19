@@ -231,17 +231,15 @@ proc save_instagram {url} {
         set output {}
     }
 
+    http::register https 443 [list ::tls::socket -ssl2 0 -ssl3 0 -tls1 1]
+
     set token [http::geturl $url]
     set data [http::data $token]
     http::cleanup $token
 
     regexp {(?i)<meta property="og:image" content="([^\"]+)"} $data -> imgUrl
     regexp {(?i)<meta property="og:title" content="([^\"]+)"} $data -> title
-    if {[info exists title]} {
-        set output_filename $title.jpg
-    } else {
-        regexp {/([^/]+)$} $imgUrl -> output_filename
-    }
+    regexp {/([^/]+)$} $imgUrl -> output_filename
     set output_filename [legitimize $output_filename]
 
     # Download $imgUrl
@@ -548,7 +546,7 @@ proc save {url} {
     } else {
         if {[string match "http://ameblo.jp/*" $url]} {
             save_ameblo $url
-        } elseif {[string match "http://instagram.com/*" $url]} {
+        } elseif {[string match "https://instagram.com/*" $url]} {
             save_instagram $url
         } elseif {[string match "http://tieba.baidu.com/*" $url]} {
             save_baidu_tieba $url
