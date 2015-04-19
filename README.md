@@ -29,6 +29,7 @@ Options:
 
 * Ameblo <http://ameblo.jp/*>
 * Baidu Tieba <http://tieba.baidu.com/*>
+* Blogspot <http://*.blogspot.*/*>
 * Douban <http://site.douban.com/*>
 * Instagram <http://instagram.com/*>
 * Twitter <https://twitter.com/*>
