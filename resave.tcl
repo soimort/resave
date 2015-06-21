@@ -498,7 +498,13 @@ proc save_google_plus {url} {
         set data [http::data $token]
         http::cleanup $token
         regexp {<title[^<]+>(.+)</title>} $data -> title
-        puts $title
+        if {![info exists title]} {
+            regexp {The document has moved <A HREF="([^\"]+)">here} $data -> new_url
+            set token [http::geturl $new_url]
+            set data [http::data $token]
+            http::cleanup $token
+            regexp {<title[^<]+>(.+)</title>} $data -> title
+        }
     }
     set title [string trim $title]
 

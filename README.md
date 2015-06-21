@@ -1,4 +1,4 @@
-# Resave
+# resave
 
 Resave, an image downloader written in Tcl.
 
