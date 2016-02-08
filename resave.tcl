@@ -372,6 +372,8 @@ proc save_blogspot {url} {
         set output {}
     }
 
+    http::register https 443 [list ::tls::socket -ssl2 0 -ssl3 0 -tls1 1]
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
@@ -380,7 +382,7 @@ proc save_blogspot {url} {
     regexp {(?i)<title>([^<]+)} $data -> title
     set title [string trim $title]
 
-    set matches [regexp -all -inline {http://[^<\"\')]+/s1600/[^<\"\')]+\.jpg} $data]
+    set matches [regexp -all -inline {https?://[^<\"\')]+/s1600/[^<\"\')]+\.jpg} $data]
     set matches [lsort -unique $matches]
     set len [expr [llength $matches]]
     set i 0
