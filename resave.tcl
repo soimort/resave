@@ -151,6 +151,8 @@ proc save_ameblo {url} {
         set output {}
     }
 
+    http::register https 443 [list ::tls::socket -ssl2 0 -ssl3 0 -tls1 1]
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
@@ -608,7 +610,7 @@ proc save {url} {
     if {$resource == 0} {
         save_url $url
     } else {
-        if {[string match "http://ameblo.jp/*" $url]} {
+        if {[string match "https://ameblo.jp/*" $url]} {
             save_ameblo $url
         } elseif {[string match "https://instagram.com/*" $url]} {
             save_instagram $url
