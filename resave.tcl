@@ -295,7 +295,7 @@ proc save_baidu_tieba {url} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
             # Set new $imgUrl
-            set imgUrl http://imgsrc.baidu.com/forum/pic/item/$output_filename
+            set imgUrl http://tiebapic.baidu.com/forum/pic/item/$output_filename
 
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
 
