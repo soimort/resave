@@ -266,6 +266,8 @@ proc save_baidu_tieba {url} {
         set output {}
     }
 
+    http::register https 443 [list ::tls::socket -ssl2 0 -ssl3 0 -tls1 1]
+
     regexp {^[[:alpha:]]+://([^/]+)} $url -> domain
     set token [http::geturl $url]
     set data [http::data $token]
@@ -614,7 +616,7 @@ proc save {url} {
             save_ameblo $url
         } elseif {[string match "https://instagram.com/*" $url]} {
             save_instagram $url
-        } elseif {[string match "http://tieba.baidu.com/*" $url]} {
+        } elseif {[string match "http?://tieba.baidu.com/*" $url]} {
             save_baidu_tieba $url
         } elseif {[string match "http://site.douban.com/*" $url]} {
             save_douban $url
