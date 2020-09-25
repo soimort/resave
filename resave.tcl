@@ -204,6 +204,7 @@ proc save_ameblo {url} {
             file mkdir $dirname
         }
 
+        regsub -all \\\\u002F $imgUrl / imgUrl
         set imgUrl "http://stat.ameba.jp$imgUrl"
 
         regexp {/([^/]+)$} $imgUrl -> output_filename
