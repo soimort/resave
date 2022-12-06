@@ -297,8 +297,8 @@ proc save_baidu_tieba {url} {
         if {[file exists [file join $dirname $output_filename]]} {
             if {!$quiet} { puts "\[Skipping $i/$len\] $imgUrl" }
         } else {
-            # Set new $imgUrl
-            set imgUrl http://tiebapic.baidu.com/forum/pic/item/$output_filename
+            # FIXME: find original $imgUrl (needs a different tbpicau)
+            #set imgUrl http://tiebapic.baidu.com/forum/pic/item/$output_filename
 
             if {!$quiet} { puts "\[Downloading $i/$len\] $imgUrl" }
 
